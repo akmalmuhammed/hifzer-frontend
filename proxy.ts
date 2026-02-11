@@ -19,16 +19,24 @@ function isProtectedPath(pathname: string): boolean {
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const hasSessionCookie = request.cookies.get("hifz_has_session")?.value === "1";
+  const hasLegacySession = request.cookies.get("hifz_has_session")?.value === "1";
+  const hasClerkSession = Boolean(request.cookies.get("__session")?.value);
+  const hasSessionCookie = hasLegacySession || hasClerkSession;
 
   if (isProtectedPath(pathname) && !hasSessionCookie) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/sign-in";
     url.search = `?next=${encodeURIComponent(`${pathname}${search}`)}`;
     return NextResponse.redirect(url);
   }
 
-  if (hasSessionCookie && (pathname === "/login" || pathname === "/signup")) {
+  if (
+    hasSessionCookie &&
+    (pathname === "/login" ||
+      pathname === "/signup" ||
+      pathname === "/sign-in" ||
+      pathname === "/sign-up")
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/today";
     url.search = "";

@@ -12,7 +12,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!initializing && !isAuthenticated) {
       const next = encodeURIComponent(pathname || "/today");
-      router.replace(`/login?next=${next}`);
+      router.replace(`/sign-in?next=${next}`);
     }
   }, [initializing, isAuthenticated, pathname, router]);
 

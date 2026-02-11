@@ -6,8 +6,10 @@ Backend remains the existing Express API in `../backend`.
 ## What is migrated now
 
 - App Router scaffold with route groups
-- Auth session bootstrap (access token in memory + refresh token in localStorage)
-- Middleware guard using `hifz_has_session` cookie
+- Auth supports dual mode:
+  - Legacy backend auth (`/api/v1/auth/*`)
+  - Clerk (when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is configured)
+- Middleware guard uses Clerk `__session` cookie (and legacy fallback cookie)
 - Animated landing page sections ported from Vite prototype
 - SEO files: `sitemap.xml` and `robots.txt`
 - Core API wiring for:
@@ -47,3 +49,6 @@ Default backend URL expected: `http://localhost:4000`
 - This is phase-2 migration. Most primary routes are now ported to Next, but some advanced widgets still need parity work.
 - Existing mock-local data is cleared once on first successful live sync.
 - Display name remains frontend-local for now (backend has no `name` field yet).
+- Clerk env vars:
+  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+  - `CLERK_SECRET_KEY`

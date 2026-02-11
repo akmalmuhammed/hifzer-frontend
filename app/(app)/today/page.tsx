@@ -95,7 +95,7 @@ export default function TodayPage() {
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         logout();
-        router.replace("/login");
+        router.replace("/sign-in");
         return;
       }
       setErrorMessage(getFriendlyError(error));

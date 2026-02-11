@@ -342,6 +342,7 @@ const STORAGE_KEYS = {
 let accessTokenMemory: string | null = null;
 let refreshInFlight: Promise<AuthPayload> | null = null;
 let currentUserMemory: AuthUser | null = null;
+let bearerTokenProvider: (() => Promise<string | null>) | null = null;
 
 if (typeof window !== "undefined") {
   const persistedUserRaw = localStorage.getItem(STORAGE_KEYS.user);
@@ -405,6 +406,12 @@ function clearRefreshToken(): void {
   removeStorageValue(STORAGE_KEYS.refreshToken);
 }
 
+export function setBearerTokenProvider(
+  provider: (() => Promise<string | null>) | null,
+): void {
+  bearerTokenProvider = provider;
+}
+
 function parseApiErrorPayload(payload: unknown): {
   message: string;
   code?: string;
@@ -456,11 +463,23 @@ async function requestInternal<T>(params: {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-  const headers: Record<string, string> = {
-    "content-type": "application/json",
-  };
-  if (auth && accessTokenMemory) {
-    headers.authorization = `Bearer ${accessTokenMemory}`;
+  const headers: Record<string, string> = { "content-type": "application/json" };
+
+  let bearerToken: string | null = null;
+  if (auth) {
+    if (accessTokenMemory) {
+      bearerToken = accessTokenMemory;
+    } else if (bearerTokenProvider) {
+      try {
+        bearerToken = await bearerTokenProvider();
+      } catch {
+        bearerToken = null;
+      }
+    }
+  }
+
+  if (auth && bearerToken) {
+    headers.authorization = `Bearer ${bearerToken}`;
   }
 
   let response: Response;
@@ -497,11 +516,17 @@ async function requestInternal<T>(params: {
       response.status === 401 &&
       auth &&
       allowRefreshRetry &&
-      path !== "/api/v1/auth/refresh" &&
-      getRefreshToken()
+      (path !== "/api/v1/auth/refresh" || Boolean(bearerTokenProvider))
     ) {
       try {
-        await refreshSession();
+        if (bearerTokenProvider) {
+          // Force a single retry with a fresh token from Clerk/session provider.
+          await bearerTokenProvider();
+        } else if (getRefreshToken()) {
+          await refreshSession();
+        } else {
+          throw new Error("No token refresh strategy available");
+        }
         return await requestInternal<T>({
           path,
           method,

@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
           contact support.
         </p>
         <Link
-          href="/login"
+          href="/sign-in"
           className="mt-5 inline-block rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700"
         >
           Back to login
