@@ -1,0 +1,211 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fbfaf4;
+  --foreground: #101828;
+  --card: #ffffff;
+  --muted: #d0d5dd;
+  --ring: #0f766e;
+  --danger: #b42318;
+  --success: #027a48;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-arabic: var(--font-arabic);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 0% 0%, #dff7f3 0%, transparent 35%),
+    radial-gradient(circle at 100% 100%, #eef6ff 0%, transparent 40%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at 0% 0%, #0b2531 0%, transparent 35%),
+    radial-gradient(circle at 100% 100%, #1b1f3d 0%, transparent 40%),
+    #0b1220;
+  color: #e2e8f0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.font-arabic {
+  font-family: var(--font-arabic), serif;
+}
+
+.glass {
+  background: color-mix(in srgb, #ffffff 78%, transparent);
+  border: 1px solid color-mix(in srgb, #ffffff 65%, #d0d5dd 35%);
+  backdrop-filter: blur(12px);
+}
+
+.dark .glass {
+  background: color-mix(in srgb, #111827 80%, transparent);
+  border: 1px solid color-mix(in srgb, #1f2937 70%, #334155 30%);
+}
+
+.gradient-dawn {
+  background: linear-gradient(135deg, #ffe7e7, #ffd2b7, #ffc86a);
+}
+
+.gradient-day {
+  background: linear-gradient(135deg, #f4f8ff, #73a7ff, #f7d96f);
+}
+
+.gradient-dusk {
+  background: linear-gradient(135deg, #c6abff, #ff9ea4, #ffc39f);
+}
+
+.gradient-night {
+  background: linear-gradient(135deg, #23305f, #3f4f9b, #f1c94f);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+}
+
+.text-gradient-primary {
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-dawn {
+  background: linear-gradient(135deg, #f97316, #eab308);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.shadow-glow {
+  box-shadow: 0 10px 30px color-mix(in srgb, #0f766e 35%, transparent);
+}
+
+.shadow-glow-dawn {
+  box-shadow: 0 10px 30px color-mix(in srgb, #f97316 35%, transparent);
+}
+
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 18px color-mix(in srgb, #0f766e 28%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 36px color-mix(in srgb, #0f766e 45%, transparent);
+  }
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-gradient-shift,
+  .animate-float,
+  .animate-glow-pulse {
+    animation: none;
+  }
+}
+
+.dark .bg-white,
+.dark .bg-white\/60,
+.dark .bg-white\/70,
+.dark .bg-white\/80 {
+  background-color: #111827 !important;
+}
+
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-slate-200\/60 {
+  border-color: #334155 !important;
+}
+
+.dark .text-slate-900 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-slate-800,
+.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+.dark .bg-slate-100,
+.dark .bg-slate-200,
+.dark .bg-slate-300 {
+  background-color: #1e293b !important;
+}
+
+.dark .bg-amber-50 {
+  background-color: #3a2d13 !important;
+}
+
+.dark .bg-rose-50 {
+  background-color: #3d1d25 !important;
+}
+
+.dark .bg-teal-50 {
+  background-color: #113536 !important;
+}
+
+.dark .text-rose-700 {
+  color: #fda4af !important;
+}
+
+.dark .text-amber-700 {
+  color: #fcd34d !important;
+}
+
+.dark .text-teal-700 {
+  color: #2dd4bf !important;
+}
