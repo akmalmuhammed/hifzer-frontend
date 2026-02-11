@@ -328,9 +328,10 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = (
+const RAW_API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000"
 ).replace(/\/$/, "");
+const API_BASE_URL = RAW_API_BASE_URL.replace(/\/api\/v1$/i, "");
 
 const STORAGE_KEYS = {
   refreshToken: "hifz_refresh_token",
@@ -391,7 +392,8 @@ function setSessionCookie(enabled: boolean): void {
 }
 
 function buildUrl(path: string): string {
-  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${API_BASE_URL}${normalizedPath}`;
 }
 
 function getRefreshToken(): string | null {
