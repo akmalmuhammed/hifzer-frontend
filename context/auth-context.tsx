@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 import {
   useAuth as useClerkAuth,
   useClerk,
@@ -76,6 +77,14 @@ function LegacyAuthProviderImpl({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      Sentry.setUser({ id: user.id, email: user.email });
+      return;
+    }
+    Sentry.setUser(null);
+  }, [user]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -137,6 +146,14 @@ function ClerkAuthProviderImpl({ children }: { children: React.ReactNode }) {
       clearAuthSession();
     }
   }, [isSignedIn]);
+
+  useEffect(() => {
+    if (user) {
+      Sentry.setUser({ id: user.id, email: user.email });
+      return;
+    }
+    Sentry.setUser(null);
+  }, [user]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

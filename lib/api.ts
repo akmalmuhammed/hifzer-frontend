@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 export type AuthUser = {
   id: string;
   email: string;
@@ -433,6 +435,32 @@ function parseApiErrorPayload(payload: unknown): {
   return { message, code, details: data };
 }
 
+function captureApiException(error: unknown, context: {
+  path: string;
+  method: string;
+  status?: number;
+  code?: string;
+}): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  Sentry.withScope((scope) => {
+    scope.setTag("category", "api-client");
+    scope.setTag("path", context.path);
+    scope.setTag("method", context.method);
+    if (context.status !== undefined) {
+      scope.setTag("status", String(context.status));
+    }
+    if (context.code) {
+      scope.setTag("error_code", context.code);
+    }
+    Sentry.captureException(
+      error instanceof Error ? error : new Error(typeof error === "string" ? error : "API error")
+    );
+  });
+}
+
 async function parseJsonBody(response: Response): Promise<unknown> {
   const contentType = response.headers.get("content-type");
   if (!contentType?.includes("application/json")) {
@@ -495,6 +523,12 @@ async function requestInternal<T>(params: {
   } catch (error) {
     clearTimeout(timeout);
     if (error instanceof DOMException && error.name === "AbortError") {
+      captureApiException(error, {
+        path,
+        method,
+        status: 408,
+        code: "TIMEOUT"
+      });
       throw new ApiError({
         message:
           "Request timed out. If the backend is waking from sleep, wait a few seconds and retry.",
@@ -502,6 +536,11 @@ async function requestInternal<T>(params: {
         code: "TIMEOUT",
       });
     }
+    captureApiException(error, {
+      path,
+      method,
+      code: "NETWORK_ERROR"
+    });
     throw new ApiError({
       message: "Network unavailable",
       status: 0,
@@ -543,6 +582,14 @@ async function requestInternal<T>(params: {
     }
 
     const parsed = parseApiErrorPayload(payload);
+    if (response.status >= 500) {
+      captureApiException(new Error(parsed.message), {
+        path,
+        method,
+        status: response.status,
+        code: parsed.code
+      });
+    }
     const retryAfterRaw = response.headers.get("retry-after");
     const retryAfterSeconds = retryAfterRaw ? Number(retryAfterRaw) : undefined;
     throw new ApiError({

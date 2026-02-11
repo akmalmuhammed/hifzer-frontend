@@ -9,7 +9,7 @@ Backend remains the existing Express API in `../backend`.
 - Auth supports dual mode:
   - Legacy backend auth (`/api/v1/auth/*`)
   - Clerk (when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is configured)
-- Middleware guard uses Clerk `__session` cookie (and legacy fallback cookie)
+- Middleware guard is Clerk-based for protected app routes
 - Animated landing page sections ported from Vite prototype
 - SEO files: `sitemap.xml` and `robots.txt`
 - Core API wiring for:
@@ -52,3 +52,22 @@ Default backend URL expected: `http://localhost:4000`
 - Clerk env vars:
   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
   - `CLERK_SECRET_KEY`
+
+## Observability setup
+
+This frontend is wired for Sentry (client + server + edge):
+
+- `instrumentation-client.ts`
+- `sentry.server.config.ts`
+- `sentry.edge.config.ts`
+- `app/global-error.tsx`
+- `app/(app)/error.tsx`
+
+Add these env vars in Vercel:
+
+- `NEXT_PUBLIC_SENTRY_DSN`
+- `NEXT_PUBLIC_SENTRY_ENVIRONMENT=production`
+- `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0.1`
+- `SENTRY_DSN`
+- `SENTRY_ENVIRONMENT=production`
+- `SENTRY_TRACES_SAMPLE_RATE=0.1`
