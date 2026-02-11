@@ -17,6 +17,9 @@ export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
     await auth.protect();
   }
+}, {
+  // Let Clerk inject compatible CSP directives for hosted auth components.
+  contentSecurityPolicy: {},
 });
 
 export const config = {
