@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, Noto_Naskh_Arabic } from "next/font/google";
-import { OptionalClerkProvider } from "@/components/optional-clerk-provider";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -29,12 +29,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${manrope.variable} ${arabic.variable} antialiased`}>
-        <OptionalClerkProvider>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${manrope.variable} ${arabic.variable} antialiased`}>
           <Providers>{children}</Providers>
-        </OptionalClerkProvider>
-      </body>
-    </html>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

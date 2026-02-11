@@ -1,51 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const PROTECTED_PREFIXES = [
-  "/today",
-  "/assessment",
-  "/session",
-  "/fluency-gate",
-  "/progress",
-  "/settings",
-  "/calendar",
-  "/achievements",
-  "/practice",
-  "/tutorial",
-];
+const isProtectedRoute = createRouteMatcher([
+  "/today(.*)",
+  "/assessment(.*)",
+  "/session(.*)",
+  "/fluency-gate(.*)",
+  "/progress(.*)",
+  "/settings(.*)",
+  "/calendar(.*)",
+  "/achievements(.*)",
+  "/practice(.*)",
+  "/tutorial(.*)",
+]);
 
-function isProtectedPath(pathname: string): boolean {
-  return PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
-}
-
-export function proxy(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
-  const hasLegacySession = request.cookies.get("hifz_has_session")?.value === "1";
-  const hasClerkSession = Boolean(request.cookies.get("__session")?.value);
-  const hasSessionCookie = hasLegacySession || hasClerkSession;
-
-  if (isProtectedPath(pathname) && !hasSessionCookie) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/sign-in";
-    url.search = `?next=${encodeURIComponent(`${pathname}${search}`)}`;
-    return NextResponse.redirect(url);
+export default clerkMiddleware(async (auth, req) => {
+  if (isProtectedRoute(req)) {
+    await auth.protect();
   }
-
-  if (
-    hasSessionCookie &&
-    (pathname === "/login" ||
-      pathname === "/signup" ||
-      pathname === "/sign-in" ||
-      pathname === "/sign-up")
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/today";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
-
-  return NextResponse.next();
-}
+});
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: [
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+  ],
 };
