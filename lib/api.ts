@@ -474,7 +474,12 @@ async function requestInternal<T>(params: {
   } catch (error) {
     clearTimeout(timeout);
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new ApiError({ message: "Request timed out", status: 408, code: "TIMEOUT" });
+      throw new ApiError({
+        message:
+          "Request timed out. If the backend is waking from sleep, wait a few seconds and retry.",
+        status: 408,
+        code: "TIMEOUT",
+      });
     }
     throw new ApiError({
       message: "Network unavailable",
@@ -593,6 +598,7 @@ export async function signup(params: {
     method: "POST",
     body: params,
     auth: false,
+    timeoutMs: 45000,
     allowRefreshRetry: false,
   });
   setAuthSession(payload);
@@ -608,6 +614,7 @@ export async function login(params: {
     method: "POST",
     body: params,
     auth: false,
+    timeoutMs: 45000,
     allowRefreshRetry: false,
   });
   setAuthSession(payload);
