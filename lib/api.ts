@@ -330,7 +330,18 @@ export class ApiError extends Error {
   }
 }
 
-const RAW_API_BASE_URL = (
+function normalizeApiBaseUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("//")) {
+    return `https:${trimmed}`;
+  }
+  return `https://${trimmed}`;
+}
+
+const RAW_API_BASE_URL = normalizeApiBaseUrl(
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000"
 ).replace(/\/$/, "");
 const API_BASE_URL = RAW_API_BASE_URL.replace(/\/api\/v1$/i, "");
