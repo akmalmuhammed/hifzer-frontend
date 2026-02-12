@@ -473,6 +473,10 @@ async function parseJsonBody(response: Response): Promise<unknown> {
   }
 }
 
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function requestInternal<T>(params: {
   path: string;
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -480,14 +484,18 @@ async function requestInternal<T>(params: {
   auth?: boolean;
   timeoutMs?: number;
   allowRefreshRetry?: boolean;
+  networkRetryCount?: number;
+  maxNetworkRetries?: number;
 }): Promise<T> {
   const {
     path,
     method = "GET",
     body,
     auth = true,
-    timeoutMs = 12000,
+    timeoutMs = 20000,
     allowRefreshRetry = true,
+    networkRetryCount = 0,
+    maxNetworkRetries = 1,
   } = params;
 
   const controller = new AbortController();
@@ -523,6 +531,19 @@ async function requestInternal<T>(params: {
   } catch (error) {
     clearTimeout(timeout);
     if (error instanceof DOMException && error.name === "AbortError") {
+      if (networkRetryCount < maxNetworkRetries) {
+        await wait(1500 * (networkRetryCount + 1));
+        return requestInternal<T>({
+          path,
+          method,
+          body,
+          auth,
+          timeoutMs: Math.max(timeoutMs, 30000),
+          allowRefreshRetry,
+          networkRetryCount: networkRetryCount + 1,
+          maxNetworkRetries,
+        });
+      }
       captureApiException(error, {
         path,
         method,
@@ -534,6 +555,19 @@ async function requestInternal<T>(params: {
           "Request timed out. If the backend is waking from sleep, wait a few seconds and retry.",
         status: 408,
         code: "TIMEOUT",
+      });
+    }
+    if (networkRetryCount < maxNetworkRetries) {
+      await wait(1500 * (networkRetryCount + 1));
+      return requestInternal<T>({
+        path,
+        method,
+        body,
+        auth,
+        timeoutMs: Math.max(timeoutMs, 30000),
+        allowRefreshRetry,
+        networkRetryCount: networkRetryCount + 1,
+        maxNetworkRetries,
       });
     }
     captureApiException(error, {
@@ -553,6 +587,23 @@ async function requestInternal<T>(params: {
   const payload = await parseJsonBody(response);
 
   if (!response.ok) {
+    if (
+      [502, 503, 504].includes(response.status) &&
+      networkRetryCount < maxNetworkRetries
+    ) {
+      await wait(1500 * (networkRetryCount + 1));
+      return requestInternal<T>({
+        path,
+        method,
+        body,
+        auth,
+        timeoutMs: Math.max(timeoutMs, 30000),
+        allowRefreshRetry,
+        networkRetryCount: networkRetryCount + 1,
+        maxNetworkRetries,
+      });
+    }
+
     if (
       response.status === 401 &&
       auth &&
@@ -703,6 +754,7 @@ export async function submitAssessment(
     method: "POST",
     body: payload,
     auth: true,
+    timeoutMs: 45000,
   });
 }
 
