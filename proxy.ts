@@ -19,7 +19,14 @@ export default clerkMiddleware(async (auth, req) => {
   }
 }, {
   // Let Clerk inject compatible CSP directives for hosted auth components.
-  contentSecurityPolicy: {},
+  contentSecurityPolicy: {
+    directives: {
+      "connect-src": [
+        "https://*.ingest.sentry.io",
+        "https://*.ingest.us.sentry.io",
+      ],
+    },
+  },
 });
 
 export const config = {
