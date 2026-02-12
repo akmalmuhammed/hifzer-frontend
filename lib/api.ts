@@ -774,6 +774,7 @@ export async function getTodayQueue(): Promise<TodayQueueResponse> {
     path: "/api/v1/queue/today",
     method: "GET",
     auth: true,
+    timeoutMs: 45000,
   });
 }
 
@@ -782,6 +783,7 @@ export async function getUserStats(): Promise<UserStatsResponse> {
     path: "/api/v1/user/stats",
     method: "GET",
     auth: true,
+    timeoutMs: 30000,
   });
 }
 

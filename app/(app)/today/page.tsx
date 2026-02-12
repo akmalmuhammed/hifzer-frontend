@@ -80,12 +80,17 @@ export default function TodayPage() {
     setErrorMessage(null);
 
     try {
-      const [queuePayload, statsPayload] = await Promise.all([
-        getTodayQueue(),
-        getUserStats(),
-      ]);
+      const queuePayload = await getTodayQueue();
       setQueue(queuePayload);
-      setStats(statsPayload);
+
+      try {
+        const statsPayload = await getUserStats();
+        setStats(statsPayload);
+      } catch (statsError) {
+        // Stats is non-blocking for Today page; keep core plan available.
+        console.warn("today_stats_load_failed", statsError);
+        setStats(null);
+      }
 
       if (!isLiveMigrationDone()) {
         clearLegacyMockState();
