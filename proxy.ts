@@ -13,6 +13,25 @@ const isProtectedRoute = createRouteMatcher([
   "/tutorial(.*)",
 ]);
 
+function resolveApiOrigin(raw?: string): string | null {
+  if (!raw) {
+    return null;
+  }
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return null;
+  }
+}
+
+const apiOrigin = resolveApiOrigin(process.env.NEXT_PUBLIC_API_BASE_URL);
+const connectSrcValues = [
+  "https://*.ingest.sentry.io",
+  "https://*.ingest.us.sentry.io",
+  "https://*.workers.dev",
+  ...(apiOrigin ? [apiOrigin] : []),
+];
+
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
     await auth.protect();
@@ -21,10 +40,7 @@ export default clerkMiddleware(async (auth, req) => {
   // Let Clerk inject compatible CSP directives for hosted auth components.
   contentSecurityPolicy: {
     directives: {
-      "connect-src": [
-        "https://*.ingest.sentry.io",
-        "https://*.ingest.us.sentry.io",
-      ],
+      "connect-src": connectSrcValues,
     },
   },
 });
