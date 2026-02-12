@@ -134,7 +134,7 @@ function ClerkAuthProviderImpl({ children }: { children: React.ReactNode }) {
       if (!isSignedIn) {
         return null;
       }
-      return getToken();
+      return getToken({ skipCache: true });
     });
     return () => {
       setBearerTokenProvider(null);
